@@ -4,7 +4,7 @@
   "description": "Tunnel HTTP Connections via socket.io streams.",
   "version": "1.0.0",
   "scripts": {
-     "start": "node bin/server",
+     "start": "node bin/server"
   },
   "dependencies": {
     "is-valid-domain": "0.0.5",
