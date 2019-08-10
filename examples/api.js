@@ -1,6 +1,6 @@
 const socketTunnel = require('../lib/api');
 
-socketTunnel.connect('https://domain.example', 'deviceSubdomain', '2222')
+socketTunnel.connect('https://herokuapp.com', 'jimmythehacker', '80')
   .then((url) => {
     console.log(url);
   })

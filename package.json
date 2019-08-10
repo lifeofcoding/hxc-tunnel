@@ -3,7 +3,7 @@
   "name": "socket-tunnel",
   "description": "Tunnel HTTP Connections via socket.io streams.",
   "version": "1.0.0",
-  "scripts": "node examples/api.js",
+  "scripts": "node bin/server",
   "dependencies": {
     "is-valid-domain": "0.0.5",
     "optimist": "^0.6.1",
