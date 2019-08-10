@@ -1,0 +1,17 @@
+{
+  "author": "Eric Barch <ebarch@nooplabs.com>",
+  "name": "socket-tunnel",
+  "description": "Tunnel HTTP Connections via socket.io streams.",
+  "version": "1.0.0",
+  "scripts": "node examples/api.js",
+  "dependencies": {
+    "is-valid-domain": "0.0.5",
+    "optimist": "^0.6.1",
+    "socket.io": "^2.1.0",
+    "socket.io-client": "^2.1.0",
+    "socket.io-stream": "^0.9.1",
+    "tldjs": "^2.3.1",
+    "uuid": "^3.2.1"
+  },
+  "license": "MIT"
+}
