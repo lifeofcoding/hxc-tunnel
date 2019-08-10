@@ -10,7 +10,7 @@ var argv = optimist
   })
   .options('p', {
     alias: 'port',
-    default: 3000,
+    default: process.env.PORT || 3000,
     describe: 'Server daemon port'
   })
   .options('s', {
