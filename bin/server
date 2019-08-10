@@ -15,7 +15,7 @@ var argv = optimist
   })
   .options('s', {
     alias: 'subdomain',
-    default: '',
+    default: 'hxccloud',
     describe: 'Name of subdomain used. Required when server listens on a subdomain (leave blank otherwise)'
   })
   .argv;
