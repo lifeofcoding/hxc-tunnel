@@ -10,12 +10,12 @@ var argv = optimist
   })
   .options('p', {
     alias: 'port',
-    default: process.env.PORT || 3000,
+    default: (process.env.PORT || 3000),
     describe: 'Server daemon port'
   })
   .options('s', {
     alias: 'subdomain',
-    default: 'local',
+    default: 'cloud',
     describe: 'Name of subdomain used. Required when server listens on a subdomain (leave blank otherwise)'
   })
   .argv;

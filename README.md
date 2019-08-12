@@ -1,10 +1,6 @@
-# socket-tunnel
+# hxc-tunnel
 
 Tunnel HTTP connections via socket.io streams. Inspired by [localtunnel](https://github.com/localtunnel/localtunnel).
-
-## Blog Post
-
-[Read all about it](https://ericbarch.com/post/sockettunnel/)
 
 ## Server Usage
 
@@ -53,7 +49,7 @@ socketTunnel.connect('http://YOURDOMAIN.com', 'YOURSUBDOMAIN', '8000')
 
 ## Credits
 
-Created by Eric Barch. Additional code provided by [these generous contributors](https://github.com/ericbarch/socket-tunnel/graphs/contributors).
+Additional code provided by Eric Barch & [these generous contributors](https://github.com/ericbarch/socket-tunnel/graphs/contributors).
 
 ## License
 

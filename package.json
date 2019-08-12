@@ -1,6 +1,6 @@
 {
-  "author": "Eric Barch <ebarch@nooplabs.com>",
-  "name": "socket-tunnel",
+  "author": "Jimmy Rousseau <LifeOfCoding@gmail.com>",
+  "name": "hxc-tunnel",
   "description": "Tunnel HTTP Connections via socket.io streams.",
   "version": "1.0.0",
   "scripts": {
