@@ -93,12 +93,9 @@ module.exports = options => {
       // make sure we received a subdomain
       let subdomain = tldjs.getSubdomain(hostname).toLowerCase();
       if (!subdomain) {
-        dispatcher.dispatch(req, res);
-        /*
         return reject(
           new Error('Invalid subdomain' + subdomain + ' host:' + hostname),
         );
-        */
       }
 
       // tldjs library return subdomain as all subdomain path from the main domain.
@@ -108,6 +105,8 @@ module.exports = options => {
       // 3. If we are running the tunnel server on a subdomain, we must strip it from the provided hostname
       if (options.subdomain) {
         subdomain = subdomain.replace(`.${options.subdomain}`, '');
+      } else {
+         dispatcher.dispatch(req, res);
       }
 
       let subdomainSocket = socketsBySubdomain[subdomain];
