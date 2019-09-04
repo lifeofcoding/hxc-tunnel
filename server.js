@@ -1,49 +1,59 @@
-'use strict';
+"use strict";
 
-module.exports = (options) => {
+module.exports = options => {
   // libs
-  const http = require('http');
-  const tldjs = require('tldjs');
-  const ss = require('socket.io-stream');
-  const uuid = require('uuid/v4');
-  const isValidDomain = require('is-valid-domain');
+  const http = require("http");
+  const tldjs = require("tldjs");
+  const ss = require("socket.io-stream");
+  const uuid = require("uuid/v4");
+  const isValidDomain = require("is-valid-domain");
+  const dispatcher = require("httpdispatcher");
 
   // association between subdomains and socket.io sockets
   let socketsBySubdomain = {};
 
+  dispatcher.onGet("/", function(req, res) {
+    res.writeHead(200, { "Content-Type": "text/html" });
+    res.end("<h1>Hey, this is the homepage of your server</h1>");
+  });
+
   // bounce incoming http requests to socket.io
   let server = http.createServer(async (req, res) => {
-    getTunnelClientStreamForReq(req).then((tunnelClientStream) => {
-      const reqBodyChunks = [];
+    dispatcher.dispatch(request, response);
 
-      req.on('error', (err) => {
-        console.error(err.stack);
-      });
+    getTunnelClientStreamForReq(req)
+      .then(tunnelClientStream => {
+        const reqBodyChunks = [];
 
-      // collect body chunks
-      req.on('data', (bodyChunk) => {
-        reqBodyChunks.push(bodyChunk);
-      });
+        req.on("error", err => {
+          console.error(err.stack);
+        });
 
-      // proxy finalized request to tunnel stream
-      req.on('end', () => {
-        // make sure the client didn't die on us
-        if (req.complete) {
-          const reqLine = getReqLineFromReq(req);
-          const headers = getHeadersFromReq(req);
+        // collect body chunks
+        req.on("data", bodyChunk => {
+          reqBodyChunks.push(bodyChunk);
+        });
 
-          let reqBody = null;
-          if (reqBodyChunks.length > 0) {
-            reqBody = Buffer.concat(reqBodyChunks);
+        // proxy finalized request to tunnel stream
+        req.on("end", () => {
+          // make sure the client didn't die on us
+          if (req.complete) {
+            const reqLine = getReqLineFromReq(req);
+            const headers = getHeadersFromReq(req);
+
+            let reqBody = null;
+            if (reqBodyChunks.length > 0) {
+              reqBody = Buffer.concat(reqBodyChunks);
+            }
+
+            streamResponse(reqLine, headers, reqBody, tunnelClientStream);
           }
-
-          streamResponse(reqLine, headers, reqBody, tunnelClientStream);
-        }
+        });
+      })
+      .catch(subdomainErr => {
+        res.statusCode = 502;
+        return res.end(subdomainErr.message);
       });
-    }).catch((subdomainErr) => {
-      res.statusCode = 502;
-      return res.end(subdomainErr.message);
-    });
   });
 
   // HTTP upgrades (i.e. websockets) are NOT currently supported because socket.io relies on them
@@ -73,18 +83,20 @@ module.exports = (options) => {
   //   });
   // });
 
-  function getTunnelClientStreamForReq (req) {
+  function getTunnelClientStreamForReq(req) {
     return new Promise((resolve, reject) => {
       // without a hostname, we won't know who the request is for
       let hostname = req.headers.host;
       if (!hostname) {
-        return reject(new Error('Invalid hostname'));
+        return reject(new Error("Invalid hostname"));
       }
 
       // make sure we received a subdomain
       let subdomain = tldjs.getSubdomain(hostname).toLowerCase();
       if (!subdomain) {
-        return reject(new Error('Invalid subdomain' + subdomain + ' host:' + hostname));
+        return reject(
+          new Error("Invalid subdomain" + subdomain + " host:" + hostname)
+        );
       }
 
       // tldjs library return subdomain as all subdomain path from the main domain.
@@ -93,20 +105,26 @@ module.exports = (options) => {
       // 2. my.super.example.com = my.super
       // 3. If we are running the tunnel server on a subdomain, we must strip it from the provided hostname
       if (options.subdomain) {
-        subdomain = subdomain.replace(`.${options.subdomain}`, '');
+        subdomain = subdomain.replace(`.${options.subdomain}`, "");
       }
 
       let subdomainSocket = socketsBySubdomain[subdomain];
       if (!subdomainSocket) {
-        return reject(new Error(`${subdomain} is currently unregistered or offline.`));
+        return reject(
+          new Error(`${subdomain} is currently unregistered or offline.`)
+        );
       }
 
-      if (req.connection.tunnelClientStream !== undefined && !req.connection.tunnelClientStream.destroyed && req.connection.subdomain === subdomain) {
+      if (
+        req.connection.tunnelClientStream !== undefined &&
+        !req.connection.tunnelClientStream.destroyed &&
+        req.connection.subdomain === subdomain
+      ) {
         return resolve(req.connection.tunnelClientStream);
       }
 
       let requestGUID = uuid();
-      ss(subdomainSocket).once(requestGUID, (tunnelClientStream) => {
+      ss(subdomainSocket).once(requestGUID, tunnelClientStream => {
         req.connection.subdomain = subdomain;
         req.connection.tunnelClientStream = tunnelClientStream;
 
@@ -116,60 +134,76 @@ module.exports = (options) => {
         resolve(tunnelClientStream);
       });
 
-      subdomainSocket.emit('incomingClient', requestGUID);
+      subdomainSocket.emit("incomingClient", requestGUID);
     });
   }
 
-  function getReqLineFromReq (req) {
+  function getReqLineFromReq(req) {
     return `${req.method} ${req.url} HTTP/${req.httpVersion}`;
   }
 
-  function getHeadersFromReq (req) {
+  function getHeadersFromReq(req) {
     const headers = [];
 
-    for (let i = 0; i < (req.rawHeaders.length - 1); i += 2) {
-      headers.push(req.rawHeaders[i] + ': ' + req.rawHeaders[i + 1]);
+    for (let i = 0; i < req.rawHeaders.length - 1; i += 2) {
+      headers.push(req.rawHeaders[i] + ": " + req.rawHeaders[i + 1]);
     }
 
     return headers;
   }
 
-  function streamResponse (reqLine, headers, reqBody, tunnelClientStream) {
+  function streamResponse(reqLine, headers, reqBody, tunnelClientStream) {
     tunnelClientStream.write(reqLine);
-    tunnelClientStream.write('\r\n');
-    tunnelClientStream.write(headers.join('\r\n'));
-    tunnelClientStream.write('\r\n\r\n');
+    tunnelClientStream.write("\r\n");
+    tunnelClientStream.write(headers.join("\r\n"));
+    tunnelClientStream.write("\r\n\r\n");
     if (reqBody) {
       tunnelClientStream.write(reqBody);
     }
   }
 
   // socket.io instance
-  let io = require('socket.io')(server);
-  io.on('connection', (socket) => {
-    socket.on('createTunnel', (requestedName, responseCb) => {
+  let io = require("socket.io")(server);
+  io.on("connection", socket => {
+    socket.on("createTunnel", (requestedName, responseCb) => {
       if (socket.requestedName) {
         // tunnel has already been created
         return;
       }
 
       // domains are case insensitive
-      let reqNameNormalized = requestedName.toString().toLowerCase().replace(/[^0-9a-z-]/g, '');
+      let reqNameNormalized = requestedName
+        .toString()
+        .toLowerCase()
+        .replace(/[^0-9a-z-]/g, "");
 
       // make sure the client is requesting a valid subdomain
-      if (reqNameNormalized.length === 0 || !isValidDomain(`${reqNameNormalized}.example.com`)) {
-        console.log(new Date() + ': ' + reqNameNormalized + ' -- bad subdomain. disconnecting client.');
+      if (
+        reqNameNormalized.length === 0 ||
+        !isValidDomain(`${reqNameNormalized}.example.com`)
+      ) {
+        console.log(
+          new Date() +
+            ": " +
+            reqNameNormalized +
+            " -- bad subdomain. disconnecting client."
+        );
         if (responseCb) {
-          responseCb('bad subdomain');
+          responseCb("bad subdomain");
         }
         return socket.disconnect();
       }
 
       // make sure someone else hasn't claimed this subdomain
       if (socketsBySubdomain[reqNameNormalized]) {
-        console.log(new Date() + ': ' + reqNameNormalized + ' requested but already claimed. disconnecting client.');
+        console.log(
+          new Date() +
+            ": " +
+            reqNameNormalized +
+            " requested but already claimed. disconnecting client."
+        );
         if (responseCb) {
-          responseCb('subdomain already claimed');
+          responseCb("subdomain already claimed");
         }
         return socket.disconnect();
       }
@@ -177,7 +211,9 @@ module.exports = (options) => {
       // store a reference to this socket by the subdomain claimed
       socketsBySubdomain[reqNameNormalized] = socket;
       socket.requestedName = reqNameNormalized;
-      console.log(new Date() + ': ' + reqNameNormalized + ' registered successfully');
+      console.log(
+        new Date() + ": " + reqNameNormalized + " registered successfully"
+      );
 
       if (responseCb) {
         responseCb(null);
@@ -185,10 +221,10 @@ module.exports = (options) => {
     });
 
     // when a client disconnects, we need to remove their association
-    socket.on('disconnect', () => {
+    socket.on("disconnect", () => {
       if (socket.requestedName) {
         delete socketsBySubdomain[socket.requestedName];
-        console.log(new Date() + ': ' + socket.requestedName + ' unregistered');
+        console.log(new Date() + ": " + socket.requestedName + " unregistered");
       }
     });
   });
@@ -196,5 +232,9 @@ module.exports = (options) => {
   // http server
   server.listen(options.port, options.hostname);
 
-  console.log(`${new Date()}: socket-tunnel server started on ${options.hostname}:${options.port}`);
+  console.log(
+    `${new Date()}: socket-tunnel server started on ${options.hostname}:${
+      options.port
+    }`
+  );
 };
