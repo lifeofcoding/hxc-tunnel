@@ -23,11 +23,6 @@ module.exports = options => {
       console.log(err);
     }
 
-    dispatcher.onGet('/', function(req, res) {
-      res.writeHead(200, {'Content-Type': 'text/html'});
-      res.end('<h1>Hey, this is the homepage of your server</h1>');
-    });
-
     getTunnelClientStreamForReq(req)
       .then(tunnelClientStream => {
         const reqBodyChunks = [];
@@ -62,6 +57,12 @@ module.exports = options => {
         return res.end(subdomainErr.message);
       });
   });
+
+
+    dispatcher.onGet('/', function(req, res) {
+      res.writeHead(200, {'Content-Type': 'text/html'});
+      res.end('<h1>Hey, this is the homepage of your server</h1>');
+    });
 
   // HTTP upgrades (i.e. websockets) are NOT currently supported because socket.io relies on them
   // server.on('upgrade', (req, socket, head) => {
