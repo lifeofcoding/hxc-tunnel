@@ -8,21 +8,18 @@ module.exports = options => {
   const uuid = require('uuid/v4');
   const isValidDomain = require('is-valid-domain');
   const HttpDispatcher = require('httpdispatcher');
-  const dispatcher     = new HttpDispatcher();
+  const dispatcher = new HttpDispatcher();
 
   // association between subdomains and socket.io sockets
   let socketsBySubdomain = {};
 
+  dispatcher.onGet('/', function(req, res) {
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.end('<h1>Hey, this is the homepage of your server</h1>');
+  });
   // bounce incoming http requests to socket.io
   let server = http.createServer(async (req, res) => {
-    try {
-      // log the request on console
-      console.log(request.url);
-      // Dispatch
-      dispatcher.dispatch(req, res);
-    } catch (err) {
-      console.log(err);
-    }
+    dispatcher.dispatch(req, res);
 
     getTunnelClientStreamForReq(req)
       .then(tunnelClientStream => {
@@ -58,12 +55,6 @@ module.exports = options => {
         return res.end(subdomainErr.message);
       });
   });
-
-
-    dispatcher.onGet('/', function(req, res) {
-      res.writeHead(200, {'Content-Type': 'text/html'});
-      res.end('<h1>Hey, this is the homepage of your server</h1>');
-    });
 
   // HTTP upgrades (i.e. websockets) are NOT currently supported because socket.io relies on them
   // server.on('upgrade', (req, socket, head) => {
