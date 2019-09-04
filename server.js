@@ -19,9 +19,17 @@ module.exports = options => {
 
   // bounce incoming http requests to socket.io
   let server = http.createServer(async (req, res) => {
-    dispatcher.dispatch(request, response);
 
-    getTunnelClientStreamForReq(req)
+    try {
+        // log the request on console
+        console.log(request.url);
+        // Dispatch
+        dispatcher.dispatch(request, response);
+    } catch(err) {
+        console.log(err);
+    }
+
+      getTunnelClientStreamForReq(req)
       .then(tunnelClientStream => {
         const reqBodyChunks = [];
 
