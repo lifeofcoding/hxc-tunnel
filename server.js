@@ -7,7 +7,8 @@ module.exports = options => {
   const ss = require('socket.io-stream');
   const uuid = require('uuid/v4');
   const isValidDomain = require('is-valid-domain');
-  const dispatcher = require('httpdispatcher');
+  const HttpDispatcher = require('httpdispatcher');
+  const dispatcher     = new HttpDispatcher();
 
   // association between subdomains and socket.io sockets
   let socketsBySubdomain = {};
