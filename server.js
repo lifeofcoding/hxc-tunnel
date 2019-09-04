@@ -19,6 +19,12 @@ module.exports = options => {
   });
   // bounce incoming http requests to socket.io
   let server = http.createServer(async (req, res) => {
+    let hostname = req.headers.host;
+    // make sure we received a subdomain
+    let subdomain = tldjs.getSubdomain(hostname).toLowerCase();
+    if (!subdomain) {
+      dispatcher.dispatch(req, res);
+    }
 
     getTunnelClientStreamForReq(req)
       .then(tunnelClientStream => {
@@ -105,8 +111,6 @@ module.exports = options => {
       // 3. If we are running the tunnel server on a subdomain, we must strip it from the provided hostname
       if (options.subdomain) {
         subdomain = subdomain.replace(`.${options.subdomain}`, '');
-      } else {
-         dispatcher.dispatch(req, res);
       }
 
       let subdomainSocket = socketsBySubdomain[subdomain];
