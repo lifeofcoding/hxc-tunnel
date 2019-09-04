@@ -19,7 +19,6 @@ module.exports = options => {
   });
   // bounce incoming http requests to socket.io
   let server = http.createServer(async (req, res) => {
-    dispatcher.dispatch(req, res);
 
     getTunnelClientStreamForReq(req)
       .then(tunnelClientStream => {
@@ -94,9 +93,12 @@ module.exports = options => {
       // make sure we received a subdomain
       let subdomain = tldjs.getSubdomain(hostname).toLowerCase();
       if (!subdomain) {
+        dispatcher.dispatch(req, res);
+        /*
         return reject(
           new Error('Invalid subdomain' + subdomain + ' host:' + hostname),
         );
+        */
       }
 
       // tldjs library return subdomain as all subdomain path from the main domain.
