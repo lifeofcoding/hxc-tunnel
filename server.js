@@ -97,7 +97,7 @@ module.exports = options => {
       }
 
       // make sure we received a subdomain
-      let subdomain = tldjs.getSubdomain(hostname).toLowerCase() || 'local';
+      let subdomain = tldjs.getSubdomain(hostname).toLowerCase();
       if (!subdomain) {
         return reject(
           new Error('Invalid subdomain' + subdomain + ' host:' + hostname),
