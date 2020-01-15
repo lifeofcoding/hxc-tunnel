@@ -21,9 +21,6 @@ module.exports = options => {
   let server = http.createServer(async (req, res) => {
     let hostname = req.headers.host;
 
-    if (hostname) {
-      hostname = hostname.replace('hxc', '');
-    }
     // make sure we received a subdomain
     let subdomain = tldjs.getSubdomain(hostname).toLowerCase();
     if (!subdomain) {
@@ -95,7 +92,7 @@ module.exports = options => {
   function getTunnelClientStreamForReq(req) {
     return new Promise((resolve, reject) => {
       // without a hostname, we won't know who the request is for
-      let hostname = req.headers.host;
+      let hostname = req.headers.host.replace('hxc', '');
       if (!hostname) {
         return reject(new Error('Invalid hostname'));
       }
