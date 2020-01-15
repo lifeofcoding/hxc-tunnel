@@ -20,6 +20,10 @@ module.exports = options => {
   // bounce incoming http requests to socket.io
   let server = http.createServer(async (req, res) => {
     let hostname = req.headers.host;
+
+    if (hostname) {
+      hostname = hostname.replace('hxc', '');
+    }
     // make sure we received a subdomain
     let subdomain = tldjs.getSubdomain(hostname).toLowerCase();
     if (!subdomain) {
