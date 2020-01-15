@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = options => {
-  options.hostname = options.hostname.replace('hxc', '');
+  //options.hostname = options.hostname.replace('hxc', '');
   // libs
   const http = require('http');
   const tldjs = require('tldjs');
