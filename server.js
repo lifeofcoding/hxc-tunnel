@@ -92,7 +92,7 @@ module.exports = options => {
   function getTunnelClientStreamForReq(req) {
     return new Promise((resolve, reject) => {
       // without a hostname, we won't know who the request is for
-      let hostname = req.headers.host.replace('hxc', '');
+      let hostname = req.headers.host;
       if (!hostname) {
         return reject(new Error('Invalid hostname'));
       }
@@ -181,6 +181,7 @@ module.exports = options => {
       let reqNameNormalized = requestedName
         .toString()
         .toLowerCase()
+        .replace('hxc', '')
         .replace(/[^0-9a-z-]/g, '');
 
       // make sure the client is requesting a valid subdomain
