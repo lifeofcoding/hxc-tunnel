@@ -1,6 +1,7 @@
 'use strict';
 
 module.exports = options => {
+  options.hostname = options.hostname.replace('hxc', '');
   // libs
   const http = require('http');
   const tldjs = require('tldjs');
@@ -181,7 +182,6 @@ module.exports = options => {
       let reqNameNormalized = requestedName
         .toString()
         .toLowerCase()
-        .replace('hxc', '')
         .replace(/[^0-9a-z-]/g, '');
 
       // make sure the client is requesting a valid subdomain
