@@ -16,7 +16,17 @@ module.exports = options => {
 
   dispatcher.onGet('/', function(req, res) {
     res.writeHead(200, {'Content-Type': 'text/html'});
-    res.end('<h1>Hey, this is the homepage of your server</h1>');
+    res.end(`
+        <html>
+          <head>
+            <meta name="google-site-verification" content="jkeMkCHMoUv8vpLDggJzSVIaqdCk6wCfoBu-d-fddYQ" />
+            <title> My title </title>
+          </head>
+          <body>
+            <h1>Hey, this is the homepage of your server</h1>
+          </body>
+        </html>
+    `);
   });
   // bounce incoming http requests to socket.io
   let server = http.createServer(async (req, res) => {
