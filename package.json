@@ -28,7 +28,7 @@
   },
   "scripts": {
     "test": "mocha --ui qunit --reporter spec",
-    "start": "node -r esm ./bin/server",
+    "start": "node -r esm ./bin/server --domain jimmythejew.net",
     "dev": "node-dev bin/server --port 3000"
   }
 }
