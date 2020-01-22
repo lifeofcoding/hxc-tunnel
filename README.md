@@ -1,56 +1,62 @@
-# hxc-tunnel
+# localtunnel-server
 
-Tunnel HTTP connections via socket.io streams. Inspired by [localtunnel](https://github.com/localtunnel/localtunnel).
+[![Build Status](https://travis-ci.org/localtunnel/server.svg?branch=master)](https://travis-ci.org/localtunnel/server)
 
-## Server Usage
+localtunnel exposes your localhost to the world for easy testing and sharing! No need to mess with DNS or deploy just to have others test out your changes.
 
-1. Clone this repo and cd into it
-2. docker build -t socket-tunnel .
-3. docker run -d -p 80:3000 --restart=always --name st-server socket-tunnel
-4. Get a domain name (i.e. YOURDOMAIN.com)
-5. Point your domain name's root A record at your server's IP
-6. Point a wildcard (*) A record at your server's IP
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
-## Client CLI Usage
+This repo is the server component. If you are just looking for the CLI localtunnel app, see (https://github.com/localtunnel/localtunnel).
 
-1. Start your http server that you'd like to expose to the public web (in this example we'll assume it's listening on 127.0.0.1:8000)
-2. Clone this repo and cd into it
-3. `npm i`
-4. `node bin/client --server http://YOURDOMAIN.com --subdomain YOURSUBDOMAIN --hostname 127.0.0.1 --port 8000`
-5. Browse to http://YOURSUBDOMAIN.YOURDOMAIN.com to see your local service available on the public internet
+## overview ##
 
-## Client API Usage
+The default localtunnel client connects to the `localtunnel.me` server. You can, however, easily set up and run your own server. In order to run your own localtunnel server you must ensure that your server can meet the following requirements:
 
-Assuming a web server running on 127.0.0.1:8000
+* You can set up DNS entries for your `domain.tld` and `*.domain.tld` (or `sub.domain.tld` and `*.sub.domain.tld`).
+* The server can accept incoming TCP connections for any non-root TCP port (i.e. ports over 1000).
 
-1. Clone this repo into your project
-2. `npm i`
-3. In your project file, require the socket-tunnel api and call connect():
+The above are important as the client will ask the server for a subdomain under a particular domain. The server will listen on any OS-assigned TCP port for client connections.
 
-```JavaScript
-const socketTunnel = require('./socket-tunnel/lib/api');
+#### setup
 
-socketTunnel.connect('http://YOURDOMAIN.com', 'YOURSUBDOMAIN', '8000')
-  .then(console.log)
-  .catch(console.log);
+```shell
+# pick a place where the files will live
+git clone git://github.com/defunctzombie/localtunnel-server.git
+cd localtunnel-server
+npm install
+
+# server set to run on port 1234
+bin/server --port 1234
 ```
-4. Browse to http://YOURSUBDOMAIN.YOURDOMAIN.com to see your local service available on the public internet
 
-## Client API Parameters
+The localtunnel server is now running and waiting for client requests on port 1234. You will most likely want to set up a reverse proxy to listen on port 80 (or start localtunnel on port 80 directly).
 
-`socketTunnel.connect(remoteServer, desiredSubdomain, localPort, localHostname)` returns a promise which resolves to the requested URL/subdomain.
+**NOTE** By default, localtunnel will use subdomains for clients, if you plan to host your localtunnel server itself on a subdomain you will need to use the _--domain_ option and specify the domain name behind which you are hosting localtunnel. (i.e. my-localtunnel-server.example.com)
 
-| Property         | Default     | Description                                        |
-|------------------|-------------|----------------------------------------------------|
-| remoteServer     | n/a         | IP address or hostname of the socket-tunnel server |
-| desiredSubdomain | n/a         | Subdomain to request for this client               |
-| localPort        | n/a         | Local port to tunnel to                            |
-| localHostname    | '127.0.0.1' | Local host to tunnel to                            |
+#### use your server
 
-## Credits
+You can now use your domain with the `--host` flag for the `lt` client.
 
-Additional code provided by Eric Barch & [these generous contributors](https://github.com/ericbarch/socket-tunnel/graphs/contributors).
+```shell
+lt --host http://sub.example.tld:1234 --port 9000
+```
 
-## License
+You will be assigned a URL similar to `heavy-puma-9.sub.example.com:1234`.
 
-This project is licensed under the MIT License - see the LICENSE file for details
+If your server is acting as a reverse proxy (i.e. nginx) and is able to listen on port 80, then you do not need the `:1234` part of the hostname for the `lt` client.
+
+## Deploy
+
+You can deploy your own localtunnel server using the prebuilt docker image.
+
+**Note** This assumes that you have a proxy in front of the server to handle the http(s) requests and forward them to the localtunnel server on port 3000. You can use our [localtunnel-nginx](https://github.com/localtunnel/nginx) to accomplish this.
+
+If you do not want ssl support for your own tunnel (not recommended), then you can just run the below with `--port 80` instead.
+
+```
+docker run -d \
+    --restart always \
+    --name localtunnel \
+    --net host \
+    defunctzombie/localtunnel-server:latest --port 3000
+```

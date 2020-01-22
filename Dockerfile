@@ -1,15 +1,13 @@
-FROM node:8
+FROM node:9.2.1-alpine
 
-# Create app directory
-RUN mkdir -p /usr/src/app
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Install app dependencies
-COPY package.json /usr/src/app/
-RUN npm install
+COPY package.json /app/
+COPY yarn.lock /app/
 
-# Bundle app source
-COPY . /usr/src/app
+RUN yarn install --production && yarn cache clean
 
-EXPOSE 3000
-CMD [ "node", "bin/server" ]
+COPY . /app
+
+ENV NODE_ENV production
+ENTRYPOINT ["node", "-r", "esm", "./bin/server"]

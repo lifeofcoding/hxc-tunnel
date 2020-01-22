@@ -1,20 +1,34 @@
 {
-  "author": "Jimmy Rousseau <LifeOfCoding@gmail.com>",
-  "name": "hxc-tunnel",
-  "description": "Tunnel HTTP Connections via socket.io streams.",
-  "version": "1.0.0",
-  "scripts": {
-    "start": "node bin/server"
+  "author": "Roman Shtylman <shtylman@gmail.com>",
+  "name": "localtunnel-server",
+  "description": "expose localhost to the world",
+  "version": "0.0.8",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/localtunnel/server.git"
   },
   "dependencies": {
-    "httpdispatcher": "2.1.2",
-    "is-valid-domain": "0.0.5",
-    "optimist": "^0.6.1",
-    "socket.io": "^2.1.0",
-    "socket.io-client": "^2.1.0",
-    "socket.io-stream": "^0.9.1",
-    "tldjs": "^2.3.1",
-    "uuid": "^3.2.1"
+    "book": "1.3.3",
+    "debug": "3.1.0",
+    "esm": "3.0.14",
+    "human-readable-ids": "1.0.3",
+    "koa": "2.4.1",
+    "localenv": "0.2.2",
+    "on-finished": "2.3.0",
+    "optimist": "0.6.1",
+    "pump": "2.0.0",
+    "tldjs": "2.3.1"
   },
-  "license": "MIT"
+  "devDependencies": {
+    "localtunnel": "1.8.0",
+    "mocha": "2.5.3",
+    "node-dev": "3.1.3",
+    "ws": "0.8.0"
+  },
+  "scripts": {
+    "test": "mocha --ui qunit --reporter spec",
+    "start": "node -r esm ./bin/server",
+    "dev": "node-dev bin/server --port 3000"
+  }
 }
